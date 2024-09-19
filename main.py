@@ -89,13 +89,13 @@ async def get_students(auth: str = Depends(authenticate_user)):
     return students
 
 
-# Run the FastAPI application
-if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="",  # Listen on all interfaces
-        port=8000,
-        reload=True, # Reload the server on code changes only in development
-    )
+# # Run the FastAPI application
+# if __name__ == "__main__":
+#     uvicorn.run(
+#         "main:app",
+#         host="",  # Listen on all interfaces
+#         port=8000,
+#         reload=True, # Reload the server on code changes only in development
+#     )
 
 # in bash terminal use: $ uvicorn main:app --reload --port 3000
