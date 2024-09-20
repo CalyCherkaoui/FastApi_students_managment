@@ -122,6 +122,12 @@ def read_root():
 async def get_students(auth: str = Depends(oauth2_scheme)):
     return students
 
+@app.post("/api/students", response_model=Student)
+async def add_student(student: Student, auth: str = Depends(oauth2_scheme)):
+    # Append the new student to the students list
+    new_student = {"name": student.name, "marks": student.marks}
+    students.append(new_student)
+    return new_student
 
 # # Run the FastAPI application
 if __name__ == "__main__":
@@ -133,4 +139,16 @@ if __name__ == "__main__":
     )
 
 # # in bash terminal use: $ uvicorn main:app --reload --port 8000
+
+# curl -X POST "http://localhost:3000/api/students" \
+# -H "Authorization: Bearer your_valid_jwt_token_here" \
+# -H "Content-Type: application/json" \
+# -d '{
+#   "name": "NewStudent",
+#   "marks": 88.5
+# }'
+
+
+# curl -H "Authorization: Bearer your_valid_jwt_token_here" \
+# "http://localhost:3000/api/students"
 
