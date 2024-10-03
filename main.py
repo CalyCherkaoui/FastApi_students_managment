@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
 import jwt
 from dotenv import load_dotenv
 import os
@@ -14,6 +15,15 @@ from authentication import verify_password, create_access_token
 class Student(BaseModel):
     name: str
     marks: float
+
+class DataInSheet(BaseModel):
+    input_source_sheet_url: str
+    input_source_data_range: str
+    input_destination_sheet_url: str
+    input_destination_sheet_url: str
+    input_schedule_cron_expression: str
+    input_job_start_date: str
+
 
 class LoginRequest(BaseModel):
   username: str
@@ -45,13 +55,22 @@ BACKEND_PASSWORD_HASH = os.getenv("CAAST_USER1_PASSWORD_HASH")
 # Create FastAPI instance
 app = FastAPI()
 
+# add cors origin whitelist
+app.add_middleware(
+    CORSMiddleware,
+    # allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Create APIRouter instance
 router = APIRouter()
 
 # Implementing JWT Authentication
 ## Define OAuth2 Scheme using OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
 
 
 @router.post("/login")
@@ -73,50 +92,6 @@ app.include_router(router, prefix="/auth", tags=["Authentication"])
 def read_root():
     return {"message": "Welcome to the caast API"}
 
-
-
-
-# # Create Token Generation Function
-# from datetime import datetime, timedelta
-
-# def create_access_token(data: dict):
-#     to_encode = data.copy()
-#     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#     to_encode.update({"exp": expire})
-#     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-#     return encoded_jwt
-
-# #  Implement Authentication Dependency
-# def authenticate_user(token: str = Depends(oauth2_scheme)):
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         username: str = payload.get("sub")
-#         if username != USER_NAME:
-#             raise HTTPException(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 detail="Invalid authentication credentials",
-#             )
-#     except jwt.PyJWTError:
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Could not validate credentials",
-#         )
-
-
-
-# # Create the Token Endpoint
-# @app.post("/token")
-# async def login(form_data: dict = Depends()):
-#     username = form_data.get("username")
-#     password = form_data.get("password")
-#     if username != USER_NAME or password != PASSWORD:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Incorrect username or password",
-#         )
-#     access_token = create_access_token(data={"sub": username})
-#     return {"access_token": access_token, "token_type": "bearer"}
-
 # Create the /api/students Endpoint
 @app.get("/api/students", response_model=List[Student])
 async def get_students(auth: str = Depends(oauth2_scheme)):
@@ -128,6 +103,18 @@ async def add_student(student: Student, auth: str = Depends(oauth2_scheme)):
     new_student = {"name": student.name, "marks": student.marks}
     students.append(new_student)
     return new_student
+
+@app.post("/api/DataInSheets", response_model=DataInSheet)
+async def add_DataInSheet(DataInSheet: DataInSheet, auth: str = Depends(oauth2_scheme)):
+    # Append the new DataInSheet to the DataInSheets list
+    new_DataInSheet = {
+        "input_source_sheet_url": DataInSheet.input_source_sheet_url,
+        "input_source_data_range": DataInSheet.input_source_data_range,
+        "input_destination_sheet_url": DataInSheet.input_destination_sheet_url,
+        "input_schedule_cron_expression": DataInSheet.input_schedule_cron_expression,
+        "input_job_start_date": DataInSheet.input_job_start_date
+    }
+    return new_DataInSheet
 
 # # Run the FastAPI application
 if __name__ == "__main__":
