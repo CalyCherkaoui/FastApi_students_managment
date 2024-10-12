@@ -16,14 +16,104 @@ class Student(BaseModel):
     name: str
     marks: float
 
-class DataInSheet(BaseModel):
-    input_source_sheet_url: str
-    input_source_data_range: str
-    input_destination_sheet_url: str
-    input_destination_sheet_url: str
-    input_schedule_cron_expression: str
-    input_job_start_date: str
+# const ConfigGetDataFromMongoDB = {
+#   formId: 'getDataFromMongoDBForm',
+#   title: {
+#     title: 'Get data from MongoDB',
+#     imageSrc: `${Icons.mongodbIcon}`,
+#     imgid: 'img_getDataFromMongoDBForm',
+#   },
+#   buttonSubmit: {
+#     id: 'button_getDataFromMongoDBForm',
+#     text: 'Submit',
+#     imageSrc: `${Icons.mongodbIcon}`,
+#     classname: 'button-getDataFromMongoDBForm'
+#   },
+#   fieldsList: [
+#     {
+#       formId: 'Database_form',
+#       label: 'Database:',
+#       inputType: 'text',
+#       inputId: 'Database',
+#       inputPlaceholder: 'e.g. prod_DB',
+#     },
+#     {
+#       formId: 'Collection_form',
+#       label: 'Collection:',
+#       inputType: 'text',
+#       inputId: 'Collection',
+#       inputPlaceholder: 'e.g. product_users',
+#     },
+#     {
+#       formId: 'mongodb_pipeline_form',
+#       label: 'MongoDB pipeline:',
+#       inputType: 'text',
+#       inputId: 'mongodb_pipeline',
+#       inputPlaceholder: 'e.g. [{"$project": {"operations": ["type": "add", "value": 1]}}]}]',
+#     },
+#     {
+#       formId: 'destination_sheet_url_form',
+#       label: 'Destination sheet URL:',
+#       inputType: 'text',
+#       inputId: 'destination_sheet_url',
+#       inputPlaceholder: 'e.g. https://docs.google.com/spreadsheets',
+#     },
+#     {
+#       formId: 'destination_data_range_start_form',
+#       label: 'Destination data range start:',
+#       inputType: 'text',
+#       inputId: 'destination_data_range_start',
+#       inputPlaceholder: 'e.g. loader_test!C8',
+#     },
+#     {
+#       formId: 'schedule_cron_expression_form',
+#       label: 'Schedule cron expression:',
+#       inputType: 'text',
+#       inputId: 'schedule_cron_expression',
+#       inputPlaceholder: 'e.g. 0 0 * * *',
+#     },
+#     {
+#       formId: 'job_start_date_form',
+#       label: 'Job start date:',
+#       inputType: 'text',
+#       inputId: 'job_start_date',
+#       inputPlaceholder: 'e.g. 2023-01-01',
+#     }
+#   ]
+# }
+class GetDataFromMongoDB(BaseModel):
+    Database: str
+    Collection: str
+    mongodb_pipeline: str
+    destination_sheet_url: str
+    destination_data_range_start: str
+    schedule_cron_expression: str
+    job_start_date: str
 
+
+class DataInSheet(BaseModel):
+    source_sheet_url: str
+    source_data_range: str
+    destination_sheet_url: str
+    schedule_cron_expression: str
+    job_start_date: str
+
+class ReconciliationData(BaseModel):
+    reconciliation_spreadsheet_url: str
+    reconciliation_sheet_name: str
+    confirmed_matches_range: str
+    confirmed_discrepancies_range: str
+    confirmed_missing_range: str
+    likely_matches_range: str
+    likely_discrepancies_range: str
+    likely_missing_range: str
+    ledger_a_sheet_name: str
+    ledger_b_sheet_name: str
+    ledger_a_range: str
+    ledger_b_range: str
+    similarity_threshold_1: str
+    similarity_threshold_2: str
+    similarity_threshold_3: str
 
 class LoginRequest(BaseModel):
   username: str
@@ -108,13 +198,50 @@ async def add_student(student: Student, auth: str = Depends(oauth2_scheme)):
 async def add_DataInSheet(DataInSheet: DataInSheet, auth: str = Depends(oauth2_scheme)):
     # Append the new DataInSheet to the DataInSheets list
     new_DataInSheet = {
-        "input_source_sheet_url": DataInSheet.input_source_sheet_url,
-        "input_source_data_range": DataInSheet.input_source_data_range,
-        "input_destination_sheet_url": DataInSheet.input_destination_sheet_url,
-        "input_schedule_cron_expression": DataInSheet.input_schedule_cron_expression,
-        "input_job_start_date": DataInSheet.input_job_start_date
+        "source_sheet_url": DataInSheet.source_sheet_url,
+        "source_data_range": DataInSheet.source_data_range,
+        "destination_sheet_url": DataInSheet.destination_sheet_url,
+        "schedule_cron_expression": DataInSheet.schedule_cron_expression,
+        "job_start_date": DataInSheet.job_start_date
     }
     return new_DataInSheet
+
+
+@app.post("/api/reconciliationData", response_model=ReconciliationData)
+async def add_ReconciliationData(ReconciliationData: ReconciliationData, auth: str = Depends(oauth2_scheme)):
+    # Append the new ReconciliationData to the ReconciliationData list
+    new_ReconciliationData = {
+        "reconciliation_spreadsheet_url": ReconciliationData.reconciliation_spreadsheet_url,
+        "reconciliation_sheet_name": ReconciliationData.reconciliation_sheet_name,
+        "confirmed_matches_range": ReconciliationData.confirmed_matches_range,
+        "confirmed_discrepancies_range": ReconciliationData.confirmed_discrepancies_range,
+        "confirmed_missing_range": ReconciliationData.confirmed_missing_range,
+        "likely_matches_range": ReconciliationData.likely_matches_range,
+        "likely_discrepancies_range": ReconciliationData.likely_discrepancies_range,
+        "likely_missing_range": ReconciliationData.likely_missing_range,
+        "ledger_a_sheet_name": ReconciliationData.ledger_a_sheet_name,
+        "ledger_b_sheet_name": ReconciliationData.ledger_b_sheet_name,
+        "ledger_a_range": ReconciliationData.ledger_a_range,
+        "ledger_b_range": ReconciliationData.ledger_b_range,
+        "similarity_threshold_1": ReconciliationData.similarity_threshold_1,
+        "similarity_threshold_2": ReconciliationData.similarity_threshold_2,
+        "similarity_threshold_3": ReconciliationData.similarity_threshold_3
+    }
+    return new_ReconciliationData
+
+@app.post("/api/getDataFromMongoDB", response_model=GetDataFromMongoDB)
+async def add_GetDataFromMongoDB(GetDataFromMongoDB: GetDataFromMongoDB, auth: str = Depends(oauth2_scheme)):
+    # Append the new GetDataFromMongoDB to the GetDataFromMongoDB list
+    new_GetDataFromMongoDB = {
+        "Database": GetDataFromMongoDB.Database,
+        "Collection": GetDataFromMongoDB.Collection,
+        "mongodb_pipeline": GetDataFromMongoDB.mongodb_pipeline,
+        "destination_sheet_url": GetDataFromMongoDB.destination_sheet_url,
+        "destination_data_range_start": GetDataFromMongoDB.destination_data_range_start,
+        "schedule_cron_expression": GetDataFromMongoDB.schedule_cron_expression,
+        "job_start_date": GetDataFromMongoDB.job_start_date
+    }
+    return new_GetDataFromMongoDB
 
 # # Run the FastAPI application
 if __name__ == "__main__":
